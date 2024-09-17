@@ -26,6 +26,7 @@ To begin, you can utilize OCI's Resource Manager from the console to upload and 
 - **Tags: Adds a freeform tag GPU_TAG = "A10-1"**
 - **Boot Volume Size: 250 GB.**
 - **Initialization: Uses cloud-init to download and configure the vLLM Mistral model(s).**
+
 ## Cloud-init Configuration 
 - *The cloud-init script installs necessary dependencies, installes Docker, downloads and starts the vLLM Mistral model(s).*
 ```bash
