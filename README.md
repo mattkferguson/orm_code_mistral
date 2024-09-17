@@ -28,7 +28,7 @@ To begin, you can utilize OCI's Resource Manager from the console to upload and 
 - **Initialization: Uses cloud-init to download and configure the vLLM Mistral model(s).**
 ## Cloud-init Configuration 
 - *The cloud-init script installs necessary dependencies, installes Docker, downloads and starts the vLLM Mistral model(s).*
-```
+```bash
 dnf install -y dnf-utils zip unzip
 dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
 dnf remove -y runc
@@ -42,10 +42,18 @@ systemctl start docker.service
 - *Track cloud-init completion and  GPU resource usage with these commands (if needed):*
 - **Monitor cloud-init completion:** tail -f /var/log/cloud-init-output.log
 - **Monitor GPU utilization:** nvidia-smi dmon -s mu -c 100
+
+**Monitor the System post cloud-init**
+Track the cloud-init script completion and GPU resource usage with the following commands:
+```bash
+tail -f /var/log/cloud-init-output.log
+nvidia-smi dmon -s mu -c 100
+```
+
 ## Starting the vLLM model
 - **Deploy and interact with the vLLM Mistral model using Python.**
 - *Adjust the parameters only if needed:*
-```
+```bash
 python -O -u -m vllm.entrypoints.openai.api_server \
     --host 0.0.0.0 \
     --model "/home/opc/models/${MODEL}" \
@@ -58,18 +66,15 @@ python -O -u -m vllm.entrypoints.openai.api_server \
 ```
 ## Testing the model integration
 - **Test the model from CLI once cloud-init has completed:**
-```
-curl -X 'POST' 'http://0.0.0.0:8000/v1/chat/completions' \
--H 'accept: application/json' \
--H 'Content-Type: application/json' \
--d '{
-    "model": "/home/opc/models/'"$MODEL"'",
+```bash
+curl -X 'POST' 'http://0.0.0.0:8000/v1/chat/completions' -H 'accept: application/json' -H 'Content-Type: application/json' -d '{
+    "model": "mistralai/'"$MODEL"'",
     "messages": [{"role":"user", "content":"Write a small poem."}],
     "max_tokens": 64
 }'
 ```
 - **Test the model started locally with Jupyter notebook (Please open port 8888):**
-```
+```python
 import requests
 import json
 import os
@@ -101,7 +106,7 @@ else:
     print("Response:", response.text)
 ```
 - **Gradio integration with chatbot feaure to query the model started locally:**
-```
+```python
 import requests
 import gradio as gr
 import os
@@ -144,7 +149,7 @@ iface.launch(share=True)
 ```
 - **Docker deployment:**
 - *Alternatively, deploy the model using Docker from external source:*
-```
+```bash
 docker run --gpus all \
     -v ~/.cache/huggingface:/root/.cache/huggingface \
     --env "HUGGING_FACE_HUB_TOKEN=$ACCESS_TOKEN" \
@@ -155,19 +160,37 @@ docker run --gpus all \
     --model mistralai/$MODEL \
     --max-model-len 16384
 ```
-- **Query the model working with Docker from extrnal source and using CLI:**
+
+- **Test the model from CLI (directly calling the model):**
+```bash
+curl -X 'POST' 'http://0.0.0.0:8000/v1/chat/completions' -H 'accept: application/json' -H 'Content-Type: application/json' -d '{
+     "model": "mistralai/Mistral-7B-Instruct-v0.2",
+     "messages": [
+     {
+        "role":"user", 
+        "content":"Write a paragraph about the meaning of life."
+        }
+    ],
+     "max_tokens": 64
+ }'
 ```
-curl -X 'POST' 'http://0.0.0.0:8000/v1/chat/completions' \
--H 'accept: application/json' \
--H 'Content-Type: application/json' \
--d '{
+
+- **Query the model working with Docker from CLI (using the MODEL environment variable):**
+```bash
+curl -X 'POST' 'http://0.0.0.0:8000/v1/chat/completions' -H 'accept: application/json' -H 'Content-Type: application/json' -d '{
   "model": "mistralai/'"$MODEL"'",
-  "messages": [{"role": "user", "content": "Write a small poem."}],
+  "messages": [
+    {
+      "role": "user",
+      "content": "Write a small poem."
+    }
+  ],
   "max_tokens": 64
 }'
 ```
+
 - **Query the model working with Docker from external source and Jupyter notebook:**
-```
+```python
 import requests
 import json
 import os
@@ -198,8 +221,9 @@ else:
     print("Request failed with status code:", response.status_code)
     print("Response:", response.text)
 ```
+
 - **Query the model working with Docker from external source and using Jupyter notebook with Gradio chat:**
-```
+```python
 import requests
 import gradio as gr
 import os
@@ -244,7 +268,7 @@ iface = gr.Interface(
 iface.launch(share=True)
 ```
 - *Alternatively, you can deploy the model using Docker and the model files extracted locally:*
-```
+```bash
 docker run --gpus all \
 -v /home/opc/models/$MODEL/:/mnt/model/ \
 --env "HUGGING_FACE_HUB_TOKEN=$TOKEN_ACCESS" \
@@ -257,7 +281,7 @@ docker run --gpus all \
 --tensor-parallel-size 2
 ```
 - **Query the model working with Docker and the model files extracted locally using CLI:**
-```
+```bash
 curl -X 'POST' 'http://0.0.0.0:8000/v1/chat/completions' -H 'accept: application/json' -H 'Content-Type: application/json' -d '{
 >     "model": "/mnt/model/",
 >     "messages": [{"role": "user", "content": "Write a humorous limerick about the wonders of GPU computing."}],
@@ -267,8 +291,9 @@ curl -X 'POST' 'http://0.0.0.0:8000/v1/chat/completions' -H 'accept: application
 >  }'
 
 ```
+
 - **Query the model working with Docker and the model files extracted locally using Jupyter notebook:**
-```
+```python
 import requests
 import json
 import os
@@ -301,8 +326,9 @@ else:
     print("Request failed with status code:", response.status_code)
     print("Response:", response.text)
 ```
+
 - **Query the model working with Docker and the model files extracted locally using Jupyter notebook and Gradio chat:**
-```
+```python
 import requests
 import gradio as gr
 import os
@@ -348,8 +374,9 @@ iface = gr.Interface(
 # Launch the Gradio interface
 iface.launch(share=True)
 ```
+
 **Firewall commands to open port 8888 for Jupyter:**
-```
+```bash
 sudo firewall-cmd --zone=public --permanent --add-port 8888/tcp
 sudo firewall-cmd --reload
 sudo firewall-cmd --list-all
