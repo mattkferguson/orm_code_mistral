@@ -382,3 +382,28 @@ sudo firewall-cmd --zone=public --permanent --add-port 8888/tcp
 sudo firewall-cmd --reload
 sudo firewall-cmd --list-all
 ```
+
+**Execute the following command to complete the autentication details for oci cli:**
+```
+oci setup config
+```
+**To connect to Jupyter Notebook**
+Start the remote jupyter notebook via
+````
+jupyter notebook &
+````
+Take note of the output (Example):
+````
+[C 2024-09-17 00:28:36.484 ServerApp]
+
+    To access the server, open this file in a browser:
+        file:///home/opc/.local/share/jupyter/runtime/jpserver-11626-open.html
+    Or copy and paste one of these URLs:
+        http://localhost:8888/tree?token=d07fde51884c6e5b7285423446cf35ac3f5e103781b14c5e
+        http://127.0.0.1:8888/tree?token=d07fde51884c6e5b7285423446cf35ac3f5e103781b14c5e
+````
+From your local machine create an SSH tunnel
+````
+ssh -L 8888:localhost:8888 <your_username>@<remote_IP> -N
+````
+
