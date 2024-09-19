@@ -290,8 +290,8 @@ EOF'
 # sudo -u opc /home/opc/install.sh --accept-all-defaults
 # sudo -u opc mkdir -p /home/opc/.oci
 
-# echo "Firewall commands to allow Jupyter access"
-# sudo firewall-cmd --permanent --add-port=8888/tcp
-# sudo firewall-cmd --reload
-# sudo firewall-cmd --list-all
+echo "Firewall commands to allow Jupyter access"
+sudo firewall-cmd --permanent --add-port=8888/tcp
+sudo firewall-cmd --reload
+sudo firewall-cmd --list-all
 
